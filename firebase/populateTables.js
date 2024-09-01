@@ -1,0 +1,298 @@
+const { initializeApp } = require('firebase/app');
+const { getDatabase, ref, set } = require('firebase/database');
+
+// Firebase configuration object from your Firebase project
+const firebaseConfig = {
+  apiKey: "AIzaSyAbEjmmUOuvmfbM2RSnXlb16TAkaQUrIAQ",
+  authDomain: "colee-cdcdc.firebaseapp.com",
+  databaseURL: "https://colee-cdcdc-default-rtdb.europe-west1.firebasedatabase.app/",
+  projectId: "colee-cdcdc",
+  storageBucket: "colee-cdcdc.appspot.com",
+  messagingSenderId: "763984207954",
+  appId: "1:763984207954:ios:5ad72dbe44b5cd69a37f8b"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+
+// The data you want to insert into the database
+const data = {
+  "Adds": [
+    "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v57_297.png?alt=media&token=2f51fd39-1d0c-4932-9e35-0e0f65c2a2c2",
+    "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_543.png?alt=media&token=ca094b29-286e-4278-909f-f383b10b6fa1",
+    "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v57_297.png?alt=media&token=2f51fd39-1d0c-4932-9e35-0e0f65c2a2c2"
+  ],
+  "CSBc": [
+    {
+      "title": "Dust 2",
+      "titleMap": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_543.png?alt=media&token=ca094b29-286e-4278-909f-f383b10b6fa1",
+      "map": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_601.png?alt=media&token=82bd989d-5c1c-4969-889c-ec01432b9eff",
+      "tutorials": {
+        "tutorialImage": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_636.png?alt=media&token=3ea94674-32ad-4ad6-889e-00e87dd5f206",
+        "positions": {
+          "1": { "position": ["60%", "20%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" },
+          "2": { "position": ["30%", "10%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" },
+          "3": { "position": ["40%", "10%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" },
+          "4": { "position": ["60%", "30%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" }
+        }
+      },
+      "details": null
+    },
+    {
+      "title": "Dust 2",
+      "titleMap": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_543.png?alt=media&token=ca094b29-286e-4278-909f-f383b10b6fa1",
+      "map": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_601.png?alt=media&token=82bd989d-5c1c-4969-889c-ec01432b9eff",
+      "tutorials": {
+        "tutorialImage": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_636.png?alt=media&token=3ea94674-32ad-4ad6-889e-00e87dd5f206",
+        "positions": {
+          "1": { "position": ["10%", "10%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" },
+          "2": { "position": ["30%", "10%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" },
+          "3": { "position": ["40%", "10%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" },
+          "4": { "position": ["60%", "30%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" }
+        }
+      },
+      "details": null
+    },
+    {
+      "title": "Dust 2",
+      "titleMap": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_543.png?alt=media&token=ca094b29-286e-4278-909f-f383b10b6fa1",
+      "map": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_601.png?alt=media&token=82bd989d-5c1c-4969-889c-ec01432b9eff",
+      "tutorials": {
+        "tutorialImage": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_636.png?alt=media&token=3ea94674-32ad-4ad6-889e-00e87dd5f206",
+        "positions": {
+          "1": { "position": ["10%", "10%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" },
+          "2": { "position": ["30%", "10%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" },
+          "3": { "position": ["40%", "10%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" },
+          "4": { "position": ["60%", "30%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" }
+        }
+      },
+      "details": null
+    },
+    {
+      "title": "Dust 2",
+      "titleMap": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_543.png?alt=media&token=ca094b29-286e-4278-909f-f383b10b6fa1",
+      "map": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_601.png?alt=media&token=82bd989d-5c1c-4969-889c-ec01432b9eff",
+      "tutorials": {
+        "tutorialImage": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_636.png?alt=media&token=3ea94674-32ad-4ad6-889e-00e87dd5f206",
+        "positions": {
+          "1": { "position": ["10%", "10%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" },
+          "2": { "position": ["30%", "10%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" },
+          "3": { "position": ["40%", "10%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" },
+          "4": { "position": ["60%", "30%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" }
+        }
+      },
+      "details": null
+    },
+    {
+      "title": "Dust 2",
+      "titleMap": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_543.png?alt=media&token=ca094b29-286e-4278-909f-f383b10b6fa1",
+      "map": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_601.png?alt=media&token=82bd989d-5c1c-4969-889c-ec01432b9eff",
+      "tutorials": {
+        "tutorialImage": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_636.png?alt=media&token=3ea94674-32ad-4ad6-889e-00e87dd5f206",
+        "positions": {
+          "1": { "position": ["10%", "10%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" },
+          "2": { "position": ["30%", "10%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" },
+          "3": { "position": ["40%", "10%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" },
+          "4": { "position": ["60%", "30%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" }
+        }
+      },
+      "details": null
+    },
+    {
+      "title": "Dust 2",
+      "titleMap": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_543.png?alt=media&token=ca094b29-286e-4278-909f-f383b10b6fa1",
+      "map": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_601.png?alt=media&token=82bd989d-5c1c-4969-889c-ec01432b9eff",
+      "tutorials": {
+        "tutorialImage": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_636.png?alt=media&token=3ea94674-32ad-4ad6-889e-00e87dd5f206",
+        "positions": {
+          "1": { "position": ["10%", "10%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" },
+          "2": { "position": ["30%", "10%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" },
+          "3": { "position": ["40%", "10%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" },
+          "4": { "position": ["60%", "30%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" }
+        }
+      },
+      "details": null
+    },
+    {
+      "title": "Dust 2",
+      "titleMap": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_543.png?alt=media&token=ca094b29-286e-4278-909f-f383b10b6fa1",
+      "map": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_601.png?alt=media&token=82bd989d-5c1c-4969-889c-ec01432b9eff",
+      "tutorials": {
+        "tutorialImage": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_636.png?alt=media&token=3ea94674-32ad-4ad6-889e-00e87dd5f206",
+        "positions": {
+          "1": { "position": ["10%", "10%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" },
+          "2": { "position": ["30%", "10%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" },
+          "3": { "position": ["40%", "10%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" },
+          "4": { "position": ["60%", "30%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" }
+        }
+      },
+      "details": null
+    },
+    {
+      "title": "Dust 2",
+      "titleMap": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_543.png?alt=media&token=ca094b29-286e-4278-909f-f383b10b6fa1",
+      "map": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_601.png?alt=media&token=82bd989d-5c1c-4969-889c-ec01432b9eff",
+      "tutorials": {
+        "tutorialImage": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_636.png?alt=media&token=3ea94674-32ad-4ad6-889e-00e87dd5f206",
+        "positions": {
+          "1": { "position": ["10%", "10%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" },
+          "2": { "position": ["30%", "10%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" },
+          "3": { "position": ["40%", "10%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" },
+          "4": { "position": ["60%", "30%"], "linkVideo": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e" }
+        }
+      },
+      "details": null
+    }
+  ],
+  "Rustb": [
+    {
+      "title": "Dust 2",
+      "titleMap": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_31.png?alt=media&token=f18deb71-9340-4f25-9a0c-c8529258dbf1",
+      "rustmap": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_601.png?alt=media&token=82bd989d-5c1c-4969-889c-ec01432b9eff",
+      "tutorial": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e",
+      "requiredItems": [
+        { "name": "2 Electric Fuses", "picture": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_149.png?alt=media&token=1852672c-212d-4116-88a8-f244c3dea22f" },
+        { "name": "2 Electric Fuses", "picture": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_149.png?alt=media&token=1852672c-212d-4116-88a8-f244c3dea22f" },
+        { "name": "2 Electric Fuses", "picture": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_149.png?alt=media&token=1852672c-212d-4116-88a8-f244c3dea22f" }
+      ],
+      "legends": [
+        { "red": "Lorem Ipsum is simply dummy text of the printing and typesetting industry." },
+        { "blue": "Lorem Ipsum is simply dummy text of the printing and typesetting industry." },
+        { "orange": "Lorem Ipsum is simply dummy text of the printing and typesetting industry." },
+      ],
+      "details": "Items Required"
+    },
+    {
+      "title": "Dust 2",
+      "titleMap": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_31.png?alt=media&token=f18deb71-9340-4f25-9a0c-c8529258dbf1",
+      "rustmap": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_601.png?alt=media&token=82bd989d-5c1c-4969-889c-ec01432b9eff",
+      "tutorial": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e",
+      "requiredItems": [
+        { "name": "2 Electric Fuses", "picture": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_149.png?alt=media&token=1852672c-212d-4116-88a8-f244c3dea22f" },
+        { "name": "2 Electric Fuses", "picture": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_149.png?alt=media&token=1852672c-212d-4116-88a8-f244c3dea22f" },
+        { "name": "2 Electric Fuses", "picture": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_149.png?alt=media&token=1852672c-212d-4116-88a8-f244c3dea22f" }
+      ],
+      "legends": [
+        { "red": "Lorem Ipsum is simply dummy text of the printing and typesetting industry." },
+        { "blue": "Lorem Ipsum is simply dummy text of the printing and typesetting industry." },
+        { "orange": "Lorem Ipsum is simply dummy text of the printing and typesetting industry." },
+      ],
+      "details": "Items Required"
+    },
+    {
+      "title": "Dust 2",
+      "titleMap": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_31.png?alt=media&token=f18deb71-9340-4f25-9a0c-c8529258dbf1",
+      "rustmap": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_601.png?alt=media&token=82bd989d-5c1c-4969-889c-ec01432b9eff",
+      "tutorial": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e",
+      "requiredItems": [
+        { "name": "2 Electric Fuses", "picture": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_149.png?alt=media&token=1852672c-212d-4116-88a8-f244c3dea22f" },
+        { "name": "2 Electric Fuses", "picture": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_149.png?alt=media&token=1852672c-212d-4116-88a8-f244c3dea22f" },
+        { "name": "2 Electric Fuses", "picture": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_149.png?alt=media&token=1852672c-212d-4116-88a8-f244c3dea22f" }
+      ],
+      "legends": [
+        { "red": "Lorem Ipsum is simply dummy text of the printing and typesetting industry." },
+        { "blue": "Lorem Ipsum is simply dummy text of the printing and typesetting industry." },
+        { "orange": "Lorem Ipsum is simply dummy text of the printing and typesetting industry." },
+      ],
+      "details": "Items Required"
+    },
+    {
+      "title": "Dust 2",
+      "titleMap": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_31.png?alt=media&token=f18deb71-9340-4f25-9a0c-c8529258dbf1",
+      "rustmap": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_601.png?alt=media&token=82bd989d-5c1c-4969-889c-ec01432b9eff",
+      "tutorial": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e",
+      "requiredItems": [
+        { "name": "2 Electric Fuses", "picture": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_149.png?alt=media&token=1852672c-212d-4116-88a8-f244c3dea22f" },
+        { "name": "2 Electric Fuses", "picture": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_149.png?alt=media&token=1852672c-212d-4116-88a8-f244c3dea22f" },
+        { "name": "2 Electric Fuses", "picture": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_149.png?alt=media&token=1852672c-212d-4116-88a8-f244c3dea22f" }
+      ],
+      "legends": [
+        { "red": "Lorem Ipsum is simply dummy text of the printing and typesetting industry." },
+        { "blue": "Lorem Ipsum is simply dummy text of the printing and typesetting industry." },
+        { "orange": "Lorem Ipsum is simply dummy text of the printing and typesetting industry." },
+      ],
+      "details": "Items Required"
+    },
+    {
+      "title": "Dust 2",
+      "titleMap": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_31.png?alt=media&token=f18deb71-9340-4f25-9a0c-c8529258dbf1",
+      "rustmap": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_601.png?alt=media&token=82bd989d-5c1c-4969-889c-ec01432b9eff",
+      "tutorial": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e",
+      "requiredItems": [
+        { "name": "2 Electric Fuses", "picture": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_149.png?alt=media&token=1852672c-212d-4116-88a8-f244c3dea22f" },
+        { "name": "2 Electric Fuses", "picture": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_149.png?alt=media&token=1852672c-212d-4116-88a8-f244c3dea22f" },
+        { "name": "2 Electric Fuses", "picture": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_149.png?alt=media&token=1852672c-212d-4116-88a8-f244c3dea22f" }
+      ],
+      "legends": [
+        { "red": "Lorem Ipsum is simply dummy text of the printing and typesetting industry." },
+        { "blue": "Lorem Ipsum is simply dummy text of the printing and typesetting industry." },
+        { "orange": "Lorem Ipsum is simply dummy text of the printing and typesetting industry." },
+      ],
+      "details": "Items Required"
+    },
+    {
+      "title": "Dust 2",
+      "titleMap": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_31.png?alt=media&token=f18deb71-9340-4f25-9a0c-c8529258dbf1",
+      "rustmap": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_601.png?alt=media&token=82bd989d-5c1c-4969-889c-ec01432b9eff",
+      "tutorial": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e",
+      "requiredItems": [
+        { "name": "2 Electric Fuses", "picture": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_149.png?alt=media&token=1852672c-212d-4116-88a8-f244c3dea22f" },
+        { "name": "2 Electric Fuses", "picture": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_149.png?alt=media&token=1852672c-212d-4116-88a8-f244c3dea22f" },
+        { "name": "2 Electric Fuses", "picture": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_149.png?alt=media&token=1852672c-212d-4116-88a8-f244c3dea22f" }
+      ],
+      "legends": [
+        { "red": "Lorem Ipsum is simply dummy text of the printing and typesetting industry." },
+        { "blue": "Lorem Ipsum is simply dummy text of the printing and typesetting industry." },
+        { "orange": "Lorem Ipsum is simply dummy text of the printing and typesetting industry." },
+      ],
+      "details": "Items Required"
+    },
+    {
+      "title": "Dust 2",
+      "titleMap": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_31.png?alt=media&token=f18deb71-9340-4f25-9a0c-c8529258dbf1",
+      "rustmap": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_601.png?alt=media&token=82bd989d-5c1c-4969-889c-ec01432b9eff",
+      "tutorial": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e",
+      "requiredItems": [
+        { "name": "2 Electric Fuses", "picture": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_149.png?alt=media&token=1852672c-212d-4116-88a8-f244c3dea22f" },
+        { "name": "2 Electric Fuses", "picture": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_149.png?alt=media&token=1852672c-212d-4116-88a8-f244c3dea22f" },
+        { "name": "2 Electric Fuses", "picture": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_149.png?alt=media&token=1852672c-212d-4116-88a8-f244c3dea22f" }
+      ],
+      "legends": [
+        { "red": "Lorem Ipsum is simply dummy text of the printing and typesetting industry." },
+        { "blue": "Lorem Ipsum is simply dummy text of the printing and typesetting industry." },
+        { "orange": "Lorem Ipsum is simply dummy text of the printing and typesetting industry." },
+      ],
+      "details": "Items Required"
+    },
+    {
+      "title": "Dust 2",
+      "titleMap": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_31.png?alt=media&token=f18deb71-9340-4f25-9a0c-c8529258dbf1",
+      "rustmap": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_601.png?alt=media&token=82bd989d-5c1c-4969-889c-ec01432b9eff",
+      "tutorial": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/Sequence%2001.mp4?alt=media&token=42f14cff-a0f9-42d8-9d20-3a0534eaed2e",
+      "requiredItems": [
+        { "name": "2 Electric Fuses", "picture": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_149.png?alt=media&token=1852672c-212d-4116-88a8-f244c3dea22f" },
+        { "name": "2 Electric Fuses", "picture": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_149.png?alt=media&token=1852672c-212d-4116-88a8-f244c3dea22f" },
+        { "name": "2 Electric Fuses", "picture": "https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_149.png?alt=media&token=1852672c-212d-4116-88a8-f244c3dea22f" }
+      ],
+      "legends": [
+        { "red": "Lorem Ipsum is simply dummy text of the printing and typesetting industry." },
+        { "blue": "Lorem Ipsum is simply dummy text of the printing and typesetting industry." },
+        { "orange": "Lorem Ipsum is simply dummy text of the printing and typesetting industry." },
+      ],
+      "details": "Items Required"
+    },
+  ]
+}
+
+// Reference to the root of the database
+const dbRef = ref(database);
+
+// Set the data at the root of the database
+set(dbRef, data)
+  .then(() => {
+    console.log('Data successfully written to the database!');
+  })
+  .catch((error) => {
+    console.error('Error writing data to the database:', error);
+  });
