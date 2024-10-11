@@ -1,6 +1,5 @@
-// CircularButtons.jsx
 import React, { useRef, useState, useEffect } from 'react';
-import { View, StyleSheet, Pressable, Animated, PanResponder, Dimensions, Image, TouchableWithoutFeedback } from 'react-native';
+import { View, StyleSheet, Pressable, Animated, PanResponder, Dimensions, Image } from 'react-native';
 
 // Button images
 const imageAssets = {
@@ -22,10 +21,13 @@ const pageMapping = {
   [imageAssets.settings]: 5, // Settings page
 };
 
-const buttonSize = 48; // Size of each button
-const radius = 55; // Distance from the center button to surrounding buttons
-
 const CircularButtons = ({ onButtonPress }) => {
+  const { width: windowWidth, height: windowHeight } = Dimensions.get('window');
+
+  // Dynamically calculate button size based on screen dimensions
+  const buttonSize = windowWidth * 0.12; // Adjust the multiplier as needed
+  const radius = buttonSize * 1.2; // Distance from the center button to surrounding buttons
+
   const [isVisible, setIsVisible] = useState(false); // State for surrounding buttons visibility
   const [centralButtonImage, setCentralButtonImage] = useState(imageAssets.home); // Initial image for the central button
   const [surroundingImages, setSurroundingImages] = useState([
@@ -44,11 +46,9 @@ const CircularButtons = ({ onButtonPress }) => {
   const lastAngle = useRef(0); // To track the last angle
   const hideTimeout = useRef(null); // Timer reference for auto-hide
 
-  const { width: windowWidth, height: windowHeight } = Dimensions.get('window');
   const containerBottom = 100; // This should match the 'bottom' value in your container style
   const centerX = windowWidth / 2;
   const centerY = windowHeight - containerBottom - buttonSize; // Adjust centerY dynamically
-  
 
   const handlePanResponderMove = (e, gestureState) => {
     const { moveX, moveY } = gestureState;
@@ -195,7 +195,7 @@ const CircularButtons = ({ onButtonPress }) => {
   });
 
   const fall = centralButtonFall.interpolate({
-    inputRange: [0, windowHeight - centerY + (buttonSize / 0.23)],
+    inputRange: [0, windowHeight - centerY + (buttonSize / 0.15)],
     outputRange: [0, windowHeight - centerY + (buttonSize / 1.5)],
   });
 
@@ -208,25 +208,39 @@ const CircularButtons = ({ onButtonPress }) => {
   ).current;
 
   return (
-    <Pressable onPress={handleTouch}
-      style={styles.pressable}>
-      <View style={styles.container}>
-        <Animated.View style={[styles.circleButton, { transform: [{ translateY: fall }] }]}>
-          <Pressable style={styles.circleButtonTouch} onPress={handleCentralButtonPress}>
-            <Image source={centralButtonImage} style={styles.buttonImage} resizeMode="cover" />
+    <Pressable onPress={handleTouch} style={{ position: 'absolute' }}>
+      <View style={[styles.container, { bottom: containerBottom }]}>
+        <Animated.View style={[{
+          width: buttonSize,
+          height: buttonSize,
+          borderRadius: buttonSize / 2,
+          transform: [{ translateY: fall }]
+        }, styles.circleButton]}>
+          <Pressable style={[{
+            width: buttonSize,
+            height: buttonSize,
+            borderRadius: buttonSize / 2
+          }, styles.circleButtonTouch]} onPress={handleCentralButtonPress}>
+            <Image 
+            source={centralButtonImage} style={[{
+              width: buttonSize,
+              height: buttonSize
+            }, styles.buttonImage]} resizeMode="cover" />
           </Pressable>
         </Animated.View>
 
         {isVisible && (
           <Animated.View
             {...panResponder.panHandlers}
-            style={[
-              styles.surroundingContainer,
-              {
-                transform: [{ rotate: spin }, { scale: scaleTransform }],
-                zIndex: 1,
-              },
-            ]}
+            style={{
+              width: buttonSize * 2,
+              height: buttonSize * 2,
+              transform: [{ rotate: spin }, { scale: scaleTransform }],
+              zIndex: 1,
+              position: 'absolute',
+              left: '50%',
+              marginLeft: -buttonSize,
+            }}
           >
             {surroundingImages.map((image, index) => {
               const angle = (index / surroundingImages.length) * 2 * Math.PI - Math.PI / 2;
@@ -241,20 +255,20 @@ const CircularButtons = ({ onButtonPress }) => {
               return (
                 <Animated.View
                   key={index}
-                  style={[
-                    styles.surroundingButton,
-                    {
-                      position: 'absolute',
-                      top: '50%',
-                      left: '50%',
-                      marginLeft: left - buttonSize / 2,
-                      marginTop: top - buttonSize / 2,
-                      transform: [
-                        { rotate: '0deg' },
-                        { scale: surroundingScales[index] },
-                      ],
-                    },
-                  ]}
+                  style={{
+                    width: buttonSize,
+                    height: buttonSize,
+                    borderRadius: buttonSize / 2,
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    marginLeft: left - buttonSize / 2,
+                    marginTop: top - buttonSize / 2,
+                    transform: [
+                      { rotate: '0deg' },
+                      { scale: surroundingScales[index] },
+                    ],
+                  }}
                 >
                   <Pressable
                     onPress={() => handleSurroundingButtonPress(image)}
@@ -262,10 +276,11 @@ const CircularButtons = ({ onButtonPress }) => {
                   >
                     <Animated.Image
                       source={image}
-                      style={[
-                        styles.buttonImage,
-                        { transform: [{ rotate: textRotation }] },
-                      ]}
+                      style={{
+                        width: buttonSize,
+                        height: buttonSize,
+                        transform: [{ rotate: textRotation }],
+                      }}
                     />
                   </Pressable>
                 </Animated.View>
@@ -279,56 +294,22 @@ const CircularButtons = ({ onButtonPress }) => {
 };
 
 const styles = StyleSheet.create({
-  pressable:{
-    position: 'absolute',
-  },
   container: {
     position: 'absolute',
-    bottom: 100,
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    // height: buttonSize * 2,
   },
   circleButton: {
-    width: buttonSize,
-    height: buttonSize,
-    borderRadius: buttonSize / 2,
-    boxShadowColor: '#000',
-    boxShadowOffset: { width: 0, height: 0 },
-    boxShadowOpacity: 0.25,
-    boxShadowRadius: 15,
-    position: 'absolute',
-    bottom: 20,
-    left: '50%',
-    marginLeft: -buttonSize / 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.25,
+    shadowRadius: 15,
     zIndex: 2,
     justifyContent: 'center',
     alignItems: 'center',
   },
   circleButtonTouch: {
-    width: buttonSize,
-    height: buttonSize,
-    borderRadius: buttonSize / 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  surroundingContainer: {
-    position: 'absolute',
-    bottom: -5,
-    left: '50%',
-    marginLeft: -buttonSize,
-    width: buttonSize * 2,
-    height: buttonSize * 2,
-  },
-  surroundingButton: {
-    width: buttonSize,
-    height: buttonSize,
-    borderRadius: buttonSize / 2,
-    boxShadowColor: '#000',
-    boxShadowOffset: { width: 0, height: 0 },
-    boxShadowOpacity: 0.25,
-    boxShadowRadius: 15,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -337,10 +318,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     height: '100%',
-  },
-  buttonImage: {
-    width: buttonSize,
-    height: buttonSize,
   },
 });
 

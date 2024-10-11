@@ -1,113 +1,45 @@
-// CsbComponent.jsx
-import React, { useState, useEffect } from 'react';
+// RustbComponent.js
+
+import React, { useState, useCallback, useEffect } from 'react';
 import { View, StyleSheet, ImageBackground } from 'react-native';
-import * as Font from 'expo-font';
-import * as SplashScreen from 'expo-splash-screen';
 import ExpandableList from './ExpandableList';
+import Banner from './Banner';
 import { ref, get } from 'firebase/database';
-import { database } from '../assets/data/firebaseConfig'; // Adjust the path to your firebaseConfig.js
+import { database } from '../assets/data/firebaseConfig';
 
 const backgroundImage = require('../assets/images/v58_442.png');
 
-const fetchFonts = () => {
-  return Font.loadAsync({
-    'space-mono': require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
-};
-
 const RustbComponent = () => {
-  const [fontsLoaded, setFontsLoaded] = useState(false);
-  const [expandedIndex, setExpandedIndex] = useState(null);
-  const [bannerImage, setBannerImage] = useState(null);
   const [items, setItems] = useState([]);
+  const [expandedIndex, setExpandedIndex] = useState(null);
 
-  // Define the getRandomBannerImage function outside useEffect to make it reusable
-  const getRandomBannerImage = (bannerImages) => {
-    if (bannerImages && bannerImages.length > 0) {
-      const randomIndex = Math.floor(Math.random() * bannerImages.length);
-      return bannerImages[randomIndex];
-    }
-    return null; // Return null if there are no banner images
-  };
-
-  useEffect(() => {
-    async function loadResourcesAndDataAsync() {
-      try {
-        await fetchFonts();
-
-        // Fetch data from Firebase
-        const addsRef = ref(database, 'Adds');
-        const csbcRef = ref(database, 'Rustb');
-
-        const [addsSnapshot, csbcSnapshot] = await Promise.all([
-          get(addsRef),
-          get(csbcRef),
-        ]);
-
-        if (addsSnapshot.exists() && csbcSnapshot.exists()) {
-          const addsData = addsSnapshot.val();
-          const csbcData = csbcSnapshot.val();
-          
-          // Set initial banner image
-          setBannerImage(getRandomBannerImage(addsData));
-          setItems(csbcData);
-        } else {
-          console.log('No data available');
-        }
-      } catch (e) {
-        console.warn(e);
-      } finally {
-        setFontsLoaded(true);
-        SplashScreen.hideAsync();
-      }
-    }
-
-    loadResourcesAndDataAsync();
-  }, []);
-
-  useEffect(() => {
-    const intervalId = setInterval(async () => {
-      const bannerImagesRef = ref(database, 'Adds');
-      const snapshot = await get(bannerImagesRef);
-      if (snapshot.exists()) {
-        const bannerImages = snapshot.val();
-        setBannerImage(getRandomBannerImage(bannerImages));
-      }
-    }, 5000);
-
-    return () => clearInterval(intervalId);
-  }, []);
-
-  const handleRefresh = async () => {
+  const fetchItems = useCallback(async () => {
     try {
-      console.log('Refreshing data...');
-      // Re-fetch data from Firebase
-      const addsRef = ref(database, 'Adds');
       const csbcRef = ref(database, 'Rustb');
-
-      const [addsSnapshot, csbcSnapshot] = await Promise.all([
-        get(addsRef),
-        get(csbcRef),
-      ]);
-
-      if (addsSnapshot.exists() && csbcSnapshot.exists()) {
-        const addsData = addsSnapshot.val();
-        const csbcData = csbcSnapshot.val();
-
-        // Update the state with the new data
-        setBannerImage(getRandomBannerImage(addsData));
+      const snapshot = await get(csbcRef);
+      if (snapshot.exists()) {
+        const csbcData = snapshot.val();
         setItems(csbcData);
       } else {
         console.log('No data available');
       }
     } catch (error) {
-      console.error('Error refreshing data', error);
+      console.error('Error fetching items:', error);
     }
-  };
+  }, []);
 
-  if (!fontsLoaded) {
-    return null;
-  }
+  useEffect(() => {
+    fetchItems(); // Initial fetch
+  }, [fetchItems]);
+
+  const handleRefresh = useCallback(async () => {
+    try {
+      console.log('Refreshing data...');
+      await fetchItems(); // Re-fetch items from Firebase
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    }
+  }, [fetchItems]);
 
   return (
     <View style={styles.container}>
@@ -117,17 +49,12 @@ const RustbComponent = () => {
         resizeMode="cover"
         blurRadius={10}
       >
-        <View style={styles.bannerWrapper}>
-          {bannerImage && (
-            <ImageBackground source={{ uri: bannerImage }} style={styles.bannerImage} resizeMode="cover" />
-          )}
-        </View>
-
+        <Banner />
         <ExpandableList 
           listItems={items} 
-          expandedIndex={expandedIndex}
-          setExpandedIndex={setExpandedIndex}
-          onRefresh={handleRefresh} // Pass the correct function
+          expandedIndex={expandedIndex} 
+          setExpandedIndex={setExpandedIndex} 
+          onRefresh={handleRefresh}
         />
       </ImageBackground>
     </View>
@@ -142,23 +69,6 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     height: '100%',
-  },
-  bannerWrapper: {
-    position: 'absolute',
-    top: 37,
-    left: 0,
-    right: 0,
-    height: 80,
-    borderRadius: 30,
-    overflow: 'hidden',
-    marginHorizontal: 10,
-    zIndex: 1,
-  },
-  bannerImage: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
-    borderRadius: 30,
   },
 });
 
