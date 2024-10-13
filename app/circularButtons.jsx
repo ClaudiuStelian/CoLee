@@ -301,6 +301,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   circleButton: {
+    backgroundColor: '#ffffff',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.25,

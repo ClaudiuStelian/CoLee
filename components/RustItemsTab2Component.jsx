@@ -153,6 +153,7 @@ const styles = StyleSheet.create({
     borderRadius: width * 0.1 / 2, // Circular shape
     marginHorizontal: width * 0.02, // Space between shapes
     elevation: 5, // Shadow for Android
+    backgroundColor: '#ffffff',
     shadowColor: '#000', // Shadow color for iOS
     shadowOffset: { width: 0, height: 4 }, // Shadow offset for iOS
     shadowOpacity: 0.3, // Shadow opacity for iOS

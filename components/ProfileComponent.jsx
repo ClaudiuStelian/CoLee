@@ -15,34 +15,50 @@ import {
   signOut,
   onAuthStateChanged,
   signInWithCredential,
-  sendPasswordResetEmail, // Import the reset function
+  sendPasswordResetEmail,
 } from 'firebase/auth';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import { GoogleAuthProvider } from 'firebase/auth';
-import { getFirestore, doc, setDoc } from 'firebase/firestore'; // Import Firestore
+import { getDatabase, ref, set, get, update } from 'firebase/database'; // Import Realtime Database methods
 
 WebBrowser.maybeCompleteAuthSession();
 
 const backgroundImage = require('../assets/images/v57_293.png');
 
-const ProfileComponent = () => {
+const ProfileComponent = ({ navigation, setCurrentPageIndex }) => {
   const [isSignUp, setIsSignUp] = useState(true);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [repeatPassword, setRepeatPassword] = useState('');
   const [user, setUser] = useState(null);
+  const [displayName, setDisplayName] = useState(''); // State to store the display name
+  const [newUsername, setNewUsername] = useState(''); // State for new username
 
   const [request, response, promptAsync] = Google.useAuthRequest({
     clientId: '763984207954-rvhjjrfgiik8lhoiqqmjt8dfrq57in3d.apps.googleusercontent.com',
     redirectUri: 'http://localhost:8081',
   });
 
+  const fetchUsername = async (userId) => {
+    const db = getDatabase();
+    const userRef = ref(db, 'users/' + userId);
+    const snapshot = await get(userRef);
+    if (snapshot.exists()) {
+      const userData = snapshot.val();
+      setDisplayName(userData.username); // Set the username state
+    }
+  };
+
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      if (currentUser) {
+        fetchUsername(currentUser.uid); // Fetch username when user is signed in
+      }
     });
 
     return () => unsubscribe();
@@ -53,7 +69,6 @@ const ProfileComponent = () => {
       console.log('Google Sign-In Response:', response);
       if (response.type === 'success') {
         const { authentication } = response;
-        console.log('Authentication:', authentication);
         if (authentication) {
           handleGoogleSignIn(authentication.accessToken);
         }
@@ -61,9 +76,27 @@ const ProfileComponent = () => {
     }
   }, [response]);
 
-  // Sign Up Function
+  const handleUsernameChange = async () => {
+    if (!newUsername) {
+      Alert.alert('Error', 'Please enter a new username.');
+      return;
+    }
+
+    try {
+      const db = getDatabase();
+      const userId = user.uid; // Get the currently signed-in user's ID
+      await update(ref(db, 'users/' + userId), {
+        username: newUsername, // Update the username in the database
+      });
+      setDisplayName(newUsername); // Update the display name in the component
+      setNewUsername(''); // Clear the input field
+      Alert.alert('Success', 'Username updated successfully!');
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
+  };
+
   const handleSignUp = async () => {
-    // Check for empty fields
     if (!username || !email || !password || !repeatPassword) {
       Alert.alert('Error', 'Please fill in all fields.');
       return;
@@ -76,16 +109,24 @@ const ProfileComponent = () => {
 
     try {
       const auth = getAuth();
-      await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userId = userCredential.user.uid;
+
+      // Store user details in Firebase Realtime Database
+      const db = getDatabase();
+      await set(ref(db, 'users/' + userId), {
+        username: username,
+        email: email,
+        createdAt: new Date().toISOString(),
+      });
+
       Alert.alert('Success', 'User registered successfully!');
     } catch (error) {
       Alert.alert('Error', error.message);
     }
   };
 
-  // Sign In Function
   const handleSignIn = async () => {
-    // Check for empty fields
     if (!email || !password) {
       Alert.alert('Error', 'Please fill in all fields.');
       return;
@@ -100,8 +141,6 @@ const ProfileComponent = () => {
     }
   };
 
-
-  // Password Reset Function
   const handlePasswordReset = async () => {
     try {
       const auth = getAuth();
@@ -112,11 +151,9 @@ const ProfileComponent = () => {
     }
   };
 
-  // Google Sign-In Function
   const handleGoogleSignIn = async (accessToken) => {
     try {
       const auth = getAuth();
-      
       const credential = GoogleAuthProvider.credential(null, accessToken);
       const result = await signInWithCredential(auth, credential);
 
@@ -131,17 +168,6 @@ const ProfileComponent = () => {
         throw new Error('Failed to fetch user info');
       }
 
-      const userInfo = await userInfoResponse.json();
-      console.log('User Info:', userInfo);
-
-      const db = getFirestore();
-      const userDoc = doc(db, 'users', result.user.uid);
-      await setDoc(userDoc, {
-        username: username,
-        email: userInfo.email,
-        createdAt: new Date(),
-      });
-
       Alert.alert('Success', 'User signed in with Google successfully!');
     } catch (error) {
       console.error('Error in Google Sign-In:', error);
@@ -149,7 +175,6 @@ const ProfileComponent = () => {
     }
   };
 
-  // Logout Function
   const handleLogout = async () => {
     try {
       const auth = getAuth();
@@ -158,6 +183,10 @@ const ProfileComponent = () => {
     } catch (error) {
       Alert.alert('Error', error.message);
     }
+  };
+
+  const skipToHome = () => {
+    setCurrentPageIndex(0);
   };
 
   return (
@@ -170,7 +199,24 @@ const ProfileComponent = () => {
       <View style={styles.pageContentContainer}>
         {user ? (
           <>
-            <Text style={styles.title}>Welcome, {user.email}</Text>
+            <Text style={styles.title}>Welcome, {displayName || "User"}</Text>
+
+            <Text style={styles.label}>Change Username</Text>
+            <View style={styles.usernameContainer}>
+              <View style={styles.inputContainer}>
+                <TextInput
+                  style={styles.inputUsername}
+                  placeholder="New Username"
+                  placeholderTextColor="#4E4E4E"
+                  value={newUsername}
+                  onChangeText={setNewUsername}
+                />
+                <TouchableOpacity onPress={handleUsernameChange} style={styles.pencilButton}>
+                  <Icon name="pencil" size={20} color="#00CC66" />
+                </TouchableOpacity>
+              </View>
+            </View>
+
             <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
               <Text style={styles.logoutButtonText}>LOG OUT</Text>
             </TouchableOpacity>
@@ -180,7 +226,7 @@ const ProfileComponent = () => {
             <Text style={styles.title}>{isSignUp ? 'Sign Up' : 'Sign In'}</Text>
             <Text style={styles.subtitle}>
               {isSignUp
-                ? 'Inscrie-te acum si deblocheaza contentul exclusiv'
+                ? 'Sign up now and unlock exclusive content.'
                 : 'Welcome back! Please log in to continue.'}
             </Text>
 
@@ -194,7 +240,7 @@ const ProfileComponent = () => {
                   value={username}
                   onChangeText={setUsername}
                 />
-                <Text style={styles.label}>Adresa de email</Text>
+                <Text style={styles.label}>Email Address</Text>
                 <TextInput
                   style={styles.input}
                   placeholder="Email@mail.com"
@@ -202,7 +248,7 @@ const ProfileComponent = () => {
                   value={email}
                   onChangeText={setEmail}
                 />
-                <Text style={styles.label}>Parola</Text>
+                <Text style={styles.label}>Password</Text>
                 <TextInput
                   style={styles.input}
                   placeholder="**********"
@@ -211,7 +257,7 @@ const ProfileComponent = () => {
                   value={password}
                   onChangeText={setPassword}
                 />
-                <Text style={styles.label}>Repeta parola</Text>
+                <Text style={styles.label}>Repeat Password</Text>
                 <TextInput
                   style={styles.input}
                   placeholder="**********"
@@ -221,7 +267,7 @@ const ProfileComponent = () => {
                   onChangeText={setRepeatPassword}
                 />
                 <Text style={styles.termsText}>
-                  Apasand pe butonul de inscriere esti de acord cu termenii si conditiile noastre
+                  By pressing the sign-up button, you agree to our terms and conditions.
                 </Text>
                 <TouchableOpacity style={styles.signUpButton} onPress={handleSignUp}>
                   <Text style={styles.signUpButtonText}>SIGN UP</Text>
@@ -231,7 +277,7 @@ const ProfileComponent = () => {
 
             {!isSignUp && (
               <>
-                <Text style={styles.label}>Adresa de email</Text>
+                <Text style={styles.label}>Email Address</Text>
                 <TextInput
                   style={styles.input}
                   placeholder="Email@mail.com"
@@ -239,7 +285,7 @@ const ProfileComponent = () => {
                   value={email}
                   onChangeText={setEmail}
                 />
-                <Text style={styles.label}>Parola</Text>
+                <Text style={styles.label}>Password</Text>
                 <TextInput
                   style={styles.input}
                   placeholder="**********"
@@ -273,6 +319,10 @@ const ProfileComponent = () => {
                 {isSignUp ? 'Already have an account? SIGN IN' : 'Don’t have an account? SIGN UP'}
               </Text>
             </TouchableOpacity>
+
+            <TouchableOpacity style={styles.skipButton} onPress={skipToHome}>
+              <Text style={styles.skipButtonText}>Skip to Home</Text>
+            </TouchableOpacity>
           </>
         )}
       </View>
@@ -281,6 +331,27 @@ const ProfileComponent = () => {
 };
 
 const styles = StyleSheet.create({
+  updateButton: {
+    backgroundColor: '#00CC66',
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  updateButtonText: {
+    color: '#FFFFFF',
+    textAlign: 'center',
+  },
+  skipButton: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: '#4E4E4E', // Change to your preferred style
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  skipButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+  },
   backgroundImage: {
     flex: 1,
     width: '100%',
@@ -378,6 +449,27 @@ const styles = StyleSheet.create({
   logoutButtonText: {
     color: '#FFFFFF',
     fontWeight: 'bold',
+  },
+    usernameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 5,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ccc', // Adjust as needed
+    borderRadius: 5, // Adjust as needed
+    marginBottom:10
+  },
+  inputUsername: {
+    flex: 1,
+    padding: 10, // Adjust as needed
+    color: '#4E4E4E', // Match the placeholder color
+  },
+  pencilButton: {
+    padding: 10, // Adjust as needed for spacing
   },
 });
 

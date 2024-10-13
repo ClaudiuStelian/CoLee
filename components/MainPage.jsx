@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { View, StyleSheet, Dimensions, Animated, Image, Easing, Text } from 'react-native';
+import { View, StyleSheet, Dimensions, Animated, Image, Easing, Text, Platform } from 'react-native';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import CircularButtons from '../app/circularButtons';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
@@ -26,15 +26,24 @@ const pages = [
 ];
 
 const MainPage = () => {
-  const [currentPageIndex, setCurrentPageIndex] = useState(4);
+  const [currentPageIndex, setCurrentPageIndex] = useState(0);
   const [username, setUsername] = useState(null);
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const opacityAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    // Lock orientation to portrait mode
-    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
-  
+    // Lock orientation to portrait mode only on mobile devices
+    const lockOrientation = async () => {
+      if (Platform.OS !== 'web') {
+        try {
+          await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+        } catch (error) {
+          console.error("Failed to lock orientation:", error);
+        }
+      }
+    };
+
+    lockOrientation();
 
     // Check if the user is authenticated
     const auth = getAuth();
@@ -42,19 +51,76 @@ const MainPage = () => {
       console.log("User state changed: ", user); // Log the user object
       if (user != null) {
         // User is authenticated
-        setCurrentPageIndex(0);
-        setUsername(user.email ? user.email : 'User');
+        Animated.parallel([
+          Animated.timing(scaleAnim, {
+            toValue: 1.2,
+            duration: 300,
+            easing: Easing.ease,
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacityAnim, {
+            toValue: 0,
+            duration: 300,
+            easing: Easing.ease,
+            useNativeDriver: true,
+          }),
+        ]).start(() => {
+          setCurrentPageIndex(0);
+          setUsername(user.email ? user.email : 'User');
+          Animated.parallel([
+            Animated.timing(scaleAnim, {
+              toValue: 1,
+              duration: 300,
+              easing: Easing.ease,
+              useNativeDriver: true,
+            }),
+            Animated.timing(opacityAnim, {
+              toValue: 1,
+              duration: 300,
+              easing: Easing.ease,
+              useNativeDriver: true,
+            }),
+          ]).start();
+        });
       } else {
         // User is not authenticated
-        setCurrentPageIndex(4);
-        setUsername(null);
+        Animated.parallel([
+          Animated.timing(scaleAnim, {
+            toValue: 1.2,
+            duration: 300,
+            easing: Easing.ease,
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacityAnim, {
+            toValue: 0,
+            duration: 300,
+            easing: Easing.ease,
+            useNativeDriver: true,
+          }),
+        ]).start(() => {
+          setCurrentPageIndex(4);
+          setUsername(null);
+          Animated.parallel([
+            Animated.timing(scaleAnim, {
+              toValue: 1,
+              duration: 300,
+              easing: Easing.ease,
+              useNativeDriver: true,
+            }),
+            Animated.timing(opacityAnim, {
+              toValue: 1,
+              duration: 300,
+              easing: Easing.ease,
+              useNativeDriver: true,
+            }),
+          ]).start();
+        });
       }
     });
-  
+
     // Cleanup subscription on unmount
     return () => unsubscribe();
   }, []);
-  
 
   // Function to handle page changes with animations
   const handlePageChange = useCallback((index) => {
@@ -98,19 +164,25 @@ const MainPage = () => {
       <View style={styles.backgroundContainer}>
         <Image source={currentBackground} style={styles.backgroundImage} resizeMode='cover' />
         <Animated.View style={[styles.cardContainer, { transform: [{ scale: scaleAnim }], opacity: opacityAnim }]}>
-          <CurrentPageComponent />
+          <CurrentPageComponent setCurrentPageIndex={setCurrentPageIndex} />
         </Animated.View>
       </View>
+      
       <View style={styles.buttonContainer}>
-        <CircularButtons onButtonPress={handlePageChange} />
+        {/* Conditional rendering for CircularButtons */}
+        {!(username === null && currentPageIndex === 4) && (
+          <CircularButtons onButtonPress={handlePageChange} />
+        )}
       </View>
+      
       {username && (
         <View style={styles.usernameContainer}>
-          <Text style={styles.usernameText}>Welcome, {username}!</Text>
+          {/* Username display can be added here if needed */}
         </View>
       )}
     </View>
   );
+  
 };
 
 // StyleSheet for the component
