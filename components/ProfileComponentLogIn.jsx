@@ -1,82 +1,215 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Dimensions, Text, StyleSheet, TextInput, TouchableOpacity, Image, Alert, ActivityIndicator, ScrollView, RefreshControl  } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import * as ImagePicker from 'expo-image-picker'; // If you're using Expo
+import * as ImagePicker from 'expo-image-picker';
+import { storage, database } from '../assets/data/firebaseConfig'; // Ensure proper imports
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'; // For Storage
+import { ref as dbRef, update, get } from 'firebase/database'; // For Realtime Database
+import * as ImageManipulator from 'expo-image-manipulator';
 
-const ProfileComponentLogIn = ({ displayName, newUsername, setNewUsername, handleUsernameChange, handleLogout, handleResetPassword }) => {
-  const [profileImage, setProfileImage] = useState(null);
+const { width } = Dimensions.get('window');
+const baseFontSize = width * 0.03;
 
-  const pickImage = async () => {
-    // Request permission to access media library
-    let permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (permissionResult.granted === false) {
-      alert('Permission to access media library is required!');
-      return;
-    }
+const ProfileComponentLogIn = ({ displayName, newUsername, setNewUsername, handleUsernameChange, handleLogout, handleResetPassword, user }) => {
+    const [profileImage, setProfileImage] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
 
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
+    // Fetch user's existing profile image URL from the database
+    const fetchProfileImage = async () => {
+        if (user && user.uid) {
+            try {
+                const snapshot = await get(dbRef(database, `users/${user.uid}`));
+                if (snapshot.exists()) {
+                    const userData = snapshot.val();
+                    if (userData.profileImageUrl) {
+                        setProfileImage(userData.profileImageUrl);
+                    }
+                } else {
+                    console.log('No data available');
+                }
+            } catch (error) {
+                console.error('Error fetching profile image:', error);
+            }
+        }
+    };
 
-    if (!result.canceled) {
-      setProfileImage(result.assets[0].uri);
-    }
-  };
+    // Resize the selected image
+    const resizeImage = async (uri) => {
+        try {
+            const manipResult = await ImageManipulator.manipulateAsync(
+                uri,
+                [{ resize: { width: 1000, height: 1000 } }],
+                { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+            );
+            console.log('Resized image URI:', manipResult.uri); // Log the resized URI
+            return manipResult.uri;
+        } catch (error) {
+            console.error('Error resizing image:', error);
+            Alert.alert('Error', 'Image resizing failed');
+        }
+    };
 
-  return (
-    <View style={styles.container}>
-      <TouchableOpacity onPress={pickImage}>
-        {profileImage ? (
-          <Image source={{ uri: profileImage }} style={styles.profileImage} />
-        ) : (
-          <View style={styles.profilePlaceholder}>
-            <Icon name="user" size={50} color="#FFFFFF" />
-          </View>
-        )}
-      </TouchableOpacity>
+    // Pick an image from the gallery
+    const pickImage = async () => {
+        let permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!permissionResult.granted) {
+            alert('Permission to access media library is required!');
+            return;
+        }
 
-      <Text style={styles.title}>{displayName || "User"}</Text>
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 1,
+        });
 
-      <Text style={styles.label}>Change Username</Text>
-      <View style={styles.usernameContainer}>
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.inputUsername}
-            placeholder="New Username"
-            placeholderTextColor="#4E4E4E"
-            value={newUsername}
-            onChangeText={setNewUsername}
-          />
-          <TouchableOpacity onPress={handleUsernameChange} style={styles.pencilButton}>
-            <Icon name="pencil" size={20} color="#00CC66" />
-          </TouchableOpacity>
-        </View>
-      </View>
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+            const selectedImage = result.assets[0].uri;
+            const resizedImageUri = await resizeImage(selectedImage);
+            setProfileImage(resizedImageUri);
+            await uploadImage(resizedImageUri);
+        }
+    };
 
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutButtonText}>LOG OUT</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.resetPasswordButton} onPress={handleResetPassword}>
-          <Text style={styles.resetPasswordButtonText}>RESET PASSWORD</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+    // Upload the selected image to Firebase storage
+    const uploadImage = async (uri) => {
+        if (!uri) {
+            Alert.alert('Error', 'No image selected');
+            return;
+        }
+        if (!user || !user.uid) {
+            Alert.alert('Error', 'User not authenticated');
+            return;
+        }
+
+        setLoading(true);
+        const userId = user.uid;
+        const fileName = uri.substring(uri.lastIndexOf('/') + 1);
+        const storageRef = ref(storage, `profileImages/${userId}/${fileName}`);
+
+        try {
+            console.log('Uploading image from URI:', uri);
+            const response = await fetch(uri);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const blob = await response.blob();
+            console.log('Blob created successfully:', blob);
+            console.log('Storage Reference:', storageRef);
+
+            const snapshot = await uploadBytes(storageRef, blob);
+            console.log('Upload successful:', snapshot);
+
+            if (snapshot && snapshot.ref) {
+                const downloadURL = await getDownloadURL(snapshot.ref);
+                console.log('Download URL:', downloadURL);
+
+                try {
+                    await saveImageURLToDatabase(downloadURL);
+                } catch (error) {
+                    console.error('Failed to save URL to database:', error);
+                    Alert.alert('Error', 'Failed to save URL to database: ' + error.message);
+                }
+            } else {
+                throw new Error('Snapshot is undefined or does not contain a ref');
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            Alert.alert('Error', 'Image upload failed: ' + error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const saveImageURLToDatabase = async (downloadURL) => {
+        try {
+            const userId = user.uid;
+            await update(dbRef(database, `users/${userId}`), {
+                profileImageUrl: downloadURL,
+            });
+            console.log('Image URL saved to database successfully');
+        } catch (error) {
+            console.error('Error saving image URL to database:', error);
+            throw new Error('Database update failed: ' + error.message);
+        }
+    };
+
+    // Refresh control for pull-to-refresh functionality
+    const onRefresh = async () => {
+      setRefreshing(true);
+      await fetchProfileImage(); // Fetch the image again
+      setRefreshing(false);
+    };
+
+    // Load user's existing profile image if available
+    useEffect(() => {
+        fetchProfileImage(); // Fetch the image URL when the component mounts
+    }, [user]);
+
+    return (
+          <ScrollView 
+          contentContainerStyle={styles.container}
+          refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              }>
+            <TouchableOpacity onPress={pickImage} disabled={loading} style={styles.imageContainer}>
+                {loading ? (
+                    <ActivityIndicator size="large" color="#00CC66" />
+                ) : profileImage ? (
+                    <Image source={{ uri: profileImage }} style={styles.profileImage} />
+                ) : (
+                    <View style={styles.profilePlaceholder}>
+                        <Icon name="user" size={50} color="#FFFFFF" />
+                    </View>
+                )}
+                <View style={styles.changeImageIcon}>
+                    <Icon name="plus" size={24} color="#FFFFFF" />
+                </View>
+            </TouchableOpacity>
+
+            <Text style={styles.title}>{displayName || "User"}</Text>
+
+            <Text style={styles.label}>Change Username</Text>
+            <View style={styles.usernameContainer}>
+                <View style={styles.inputContainer}>
+                    <TextInput
+                        style={styles.inputUsername}
+                        placeholder="New Username"
+                        placeholderTextColor="#4E4E4E"
+                        value={newUsername}
+                        onChangeText={setNewUsername}
+                    />
+                    <TouchableOpacity onPress={handleUsernameChange} style={styles.pencilButton}>
+                        <Icon name="pencil" size={20} color="#00CC66" />
+                    </TouchableOpacity>
+                </View>
+            </View>
+
+            <View style={styles.buttonContainer}>
+                <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+                    <Text style={styles.logoutButtonText}>LOG OUT</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.resetPasswordButton} onPress={handleResetPassword}>
+                    <Text style={styles.resetPasswordButtonText}>RESET PASSWORD</Text>
+                </TouchableOpacity>
+            </View>
+          </ScrollView>
+    );
 };
 
 const styles = StyleSheet.create({
   container: { 
-    width: '105%', 
+    marginTop:"20%",
+    width: '100%', // Set width to 110% to exceed screen width
     height: '80%', 
     justifyContent: 'center', 
     alignItems: 'center', 
-    backgroundColor: 'rgba(28, 28, 28, 0.8)', // Added transparency
+    backgroundColor: 'rgba(28, 28, 28, 0.8)', 
     padding: 20, 
-    borderRadius: 20, // Softer edges
+    borderRadius: 20, 
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -137,18 +270,18 @@ const styles = StyleSheet.create({
     padding: 10 
   },
   buttonContainer: {
-    flexDirection: 'row', // Align buttons in a row
-    justifyContent: 'space-between', // Space out the buttons
-    width: '100%', // Full width for the container
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    width: '100%', 
   },
   logoutButton: {
-    backgroundColor: '#FF4C4C', // Bright red color
+    backgroundColor: '#FF4C4C',
     padding: 15,
-    borderRadius: 15, // Increased borderRadius for softer edges
-    width: '48%', // Adjust width to fit side by side
+    borderRadius: 15,
+    width: '48%',
     alignItems: 'center',
     marginBottom: 10,
-    shadowColor: '#FF0000', // Red shadow
+    shadowColor: '#FF0000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.9,
     shadowRadius: 6,
@@ -157,13 +290,13 @@ const styles = StyleSheet.create({
     borderColor: '#FF7373',
   },
   resetPasswordButton: {
-    backgroundColor: '#FFB84C', // Orange color for contrast
+    backgroundColor: '#FFB84C',
     padding: 15,
     borderRadius: 15,
-    width: '48%', // Adjust width to fit side by side
+    width: '48%',
     alignItems: 'center',
     marginBottom: 10,
-    shadowColor: '#FFA500', // Orange shadow
+    shadowColor: '#FFA500',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.9,
     shadowRadius: 6,
@@ -174,18 +307,29 @@ const styles = StyleSheet.create({
   logoutButtonText: {
     color: '#FFFFFF',
     fontWeight: 'bold',
-    textShadowColor: '#FFB3B3', // Light red text shadow for shiny effect
+    textShadowColor: '#FFB3B3',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 3,
-    fontSize:12.5,
+    fontSize: baseFontSize, // Dynamically calculated font size
   },
   resetPasswordButtonText: {
     color: '#FFFFFF',
     fontWeight: 'bold',
-    textShadowColor: '#FFE5B3', // Light orange text shadow for shiny effect
+    textShadowColor: '#FFB3B3',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 3,
-    fontSize:12.5,
+    fontSize: baseFontSize, // Dynamically calculated font size
+  },
+  imageContainer: {
+    position: 'relative', // Needed to position the icon absolutely
+  },
+  changeImageIcon: {
+    position: 'absolute',
+    bottom: 5,
+    left: 100,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Slightly transparent background for better visibility
+    borderRadius: 15,
+    padding: 5,
   },
 });
 

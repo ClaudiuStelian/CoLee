@@ -242,6 +242,7 @@ const ProfileComponent = ({ navigation, setCurrentPageIndex }) => {
             handleUsernameChange={handleUsernameChange} 
             handleLogout={handleLogout}
             handleResetPassword={handlePasswordReset} // Pass the reset password function
+            user={user}
           />
         ) : (
           <>
@@ -376,8 +377,9 @@ const styles = StyleSheet.create({
   },
   backgroundImage: {
     flex: 1,
-    width: '100%',
+    width: '105%',
     height: '100%',
+    marginLeft: '-2.5%', // Adjust margin if needed to center it
   },
   pageContentContainer: {
     flex: 1,
