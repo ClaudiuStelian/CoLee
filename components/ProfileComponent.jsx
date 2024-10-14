@@ -19,7 +19,7 @@ import {
 } from 'firebase/auth';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import ProfileComponentLogIn from './ProfileComponentLogIn'
 import { GoogleAuthProvider } from 'firebase/auth';
 import { getDatabase, ref, set, get, update } from 'firebase/database'; // Import Realtime Database methods
 
@@ -141,13 +141,50 @@ const ProfileComponent = ({ navigation, setCurrentPageIndex }) => {
     }
   };
 
+  // const handlePasswordReset = async () => {
+  //   try {
+  //     const auth = getAuth();
+  //     console.log(email)
+  //     await sendPasswordResetEmail(auth, email);
+  //     Alert.alert('Success', 'Password reset email sent!');
+  //   } catch (error) {
+  //     Alert.alert('Error', error.message);
+  //   }
+  // };
+
   const handlePasswordReset = async () => {
-    try {
-      const auth = getAuth();
-      await sendPasswordResetEmail(auth, email);
-      Alert.alert('Success', 'Password reset email sent!');
-    } catch (error) {
-      Alert.alert('Error', error.message);
+    const auth = getAuth();
+  
+    // Check if the user is logged in
+    if (user) {
+      const userEmail = user.email; // Get the email from the current user
+  
+      if (!userEmail) {
+        Alert.alert('Error', 'User email not found.');
+        return;
+      }
+  
+      // Send password reset email using the logged-in user's email
+      try {
+        await sendPasswordResetEmail(auth, userEmail);
+        Alert.alert('Success', 'Password reset email sent!');
+      } catch (error) {
+        Alert.alert('Error', error.message);
+      }
+    } else {
+      // User is not logged in, check if the email is provided
+      if (!email) {
+        Alert.alert('Error', 'Please enter your email address.');
+        return;
+      }
+  
+      // Send password reset email using the provided email
+      try {
+        await sendPasswordResetEmail(auth, email);
+        Alert.alert('Success', 'Password reset email sent!');
+      } catch (error) {
+        Alert.alert('Error', error.message);
+      }
     }
   };
 
@@ -198,29 +235,14 @@ const ProfileComponent = ({ navigation, setCurrentPageIndex }) => {
     >
       <View style={styles.pageContentContainer}>
         {user ? (
-          <>
-            <Text style={styles.title}>Welcome, {displayName || "User"}</Text>
-
-            <Text style={styles.label}>Change Username</Text>
-            <View style={styles.usernameContainer}>
-              <View style={styles.inputContainer}>
-                <TextInput
-                  style={styles.inputUsername}
-                  placeholder="New Username"
-                  placeholderTextColor="#4E4E4E"
-                  value={newUsername}
-                  onChangeText={setNewUsername}
-                />
-                <TouchableOpacity onPress={handleUsernameChange} style={styles.pencilButton}>
-                  <Icon name="pencil" size={20} color="#00CC66" />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-              <Text style={styles.logoutButtonText}>LOG OUT</Text>
-            </TouchableOpacity>
-          </>
+          <ProfileComponentLogIn 
+            displayName={displayName} 
+            newUsername={newUsername} 
+            setNewUsername={setNewUsername} 
+            handleUsernameChange={handleUsernameChange} 
+            handleLogout={handleLogout}
+            handleResetPassword={handlePasswordReset} // Pass the reset password function
+          />
         ) : (
           <>
             <Text style={styles.title}>{isSignUp ? 'Sign Up' : 'Sign In'}</Text>
@@ -438,18 +460,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     marginVertical: 10,
   },
-  logoutButton: {
-    backgroundColor: '#4E92B3',
-    padding: 15,
-    borderRadius: 5,
-    width: '100%',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  logoutButtonText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-  },
     usernameContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -463,14 +473,7 @@ const styles = StyleSheet.create({
     borderRadius: 5, // Adjust as needed
     marginBottom:10
   },
-  inputUsername: {
-    flex: 1,
-    padding: 10, // Adjust as needed
-    color: '#4E4E4E', // Match the placeholder color
-  },
-  pencilButton: {
-    padding: 10, // Adjust as needed for spacing
-  },
+
 });
 
 export default ProfileComponent;
