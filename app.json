@@ -14,7 +14,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.colee.tactiplay"
+      "bundleIdentifier": "com.colee.tactiplay",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "This app requires access to your photo library to upload profile pictures."
+      }
     },
     "android": {
       "adaptiveIcon": {
