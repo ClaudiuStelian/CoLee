@@ -73,7 +73,6 @@ const ProfileComponentLogIn = ({
   // Pick an image from the gallery
   const pickImage = async () => {
     try {
-        // Request permission to access media library
         let permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
         
         if (!permissionResult.granted) {
@@ -81,7 +80,6 @@ const ProfileComponentLogIn = ({
             return;
         }
 
-        // Launch the image picker
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
@@ -99,8 +97,7 @@ const ProfileComponentLogIn = ({
         console.error("Error picking image:", error);
         alert('An error occurred while trying to access the photo library.');
     }
-};
-
+  };
 
   // Upload the selected image to Firebase storage
   const uploadImage = async (uri) => {
@@ -119,37 +116,21 @@ const ProfileComponentLogIn = ({
     const storageRef = ref(storage, `profileImages/${userId}/${fileName}`);
 
     try {
-      console.log("Uploading image from URI:", uri);
       const response = await fetch(uri);
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
 
       const blob = await response.blob();
-      console.log("Blob created successfully:", blob);
-      console.log("Storage Reference:", storageRef);
-
       const snapshot = await uploadBytes(storageRef, blob);
-      console.log("Upload successful:", snapshot);
 
       if (snapshot && snapshot.ref) {
         const downloadURL = await getDownloadURL(snapshot.ref);
-        console.log("Download URL:", downloadURL);
-
-        try {
-          await saveImageURLToDatabase(downloadURL);
-        } catch (error) {
-          console.error("Failed to save URL to database:", error);
-          Alert.alert(
-            "Error",
-            "Failed to save URL to database: " + error.message
-          );
-        }
+        await saveImageURLToDatabase(downloadURL);
       } else {
         throw new Error("Snapshot is undefined or does not contain a ref");
       }
     } catch (error) {
-      console.error("Upload error:", error);
       Alert.alert("Error", "Image upload failed: " + error.message);
     } finally {
       setLoading(false);
@@ -162,9 +143,7 @@ const ProfileComponentLogIn = ({
       await update(dbRef(database, `users/${userId}`), {
         profileImageUrl: downloadURL,
       });
-      console.log("Image URL saved to database successfully");
     } catch (error) {
-      console.error("Error saving image URL to database:", error);
       throw new Error("Database update failed: " + error.message);
     }
   };
@@ -172,13 +151,13 @@ const ProfileComponentLogIn = ({
   // Refresh control for pull-to-refresh functionality
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchProfileImage(); // Fetch the image again
+    await fetchProfileImage();
     setRefreshing(false);
   };
 
   // Load user's existing profile image if available
   useEffect(() => {
-    fetchProfileImage(); // Fetch the image URL when the component mounts
+    fetchProfileImage();
   }, [user]);
 
   return (
@@ -188,58 +167,59 @@ const ProfileComponentLogIn = ({
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
-    <View style={styles.shadowContainer}>
-      <TouchableOpacity
-        onPress={pickImage}
-        disabled={loading}
-        style={styles.imageContainer}
-      >
-        {loading ? (
-          <ActivityIndicator size="large" color="#00CC66" />
-        ) : profileImage ? (
-          <Image source={{ uri: profileImage }} style={styles.profileImage} />
-        ) : (
-          <View style={styles.profilePlaceholder}>
-            <Icon name="user" size={50} color="#FFFFFF" />
+      {/* Vertical Stack using View */}
+      <View style={styles.verticalStack}>
+        <TouchableOpacity
+          onPress={pickImage}
+          disabled={loading}
+          style={styles.imageContainer}
+        >
+          {loading ? (
+            <ActivityIndicator size="large" color="#00CC66" />
+          ) : profileImage ? (
+            <Image source={{ uri: profileImage }} style={styles.profileImage} />
+          ) : (
+            <View style={styles.profilePlaceholder}>
+              <Icon name="user" size={50} color="#FFFFFF" />
+            </View>
+          )}
+          <View style={styles.changeImageIcon}>
+            <Icon name="plus" size={24} color="#FFFFFF" />
           </View>
-        )}
-        <View style={styles.changeImageIcon}>
-          <Icon name="plus" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+
+        <Text style={styles.title}>{displayName || "User"}</Text>
+
+        <Text style={styles.label}>Change Username</Text>
+        <View style={styles.usernameContainer}>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.inputUsername}
+              placeholder="New Username"
+              placeholderTextColor="#4E4E4E"
+              value={newUsername}
+              onChangeText={setNewUsername}
+            />
+            <TouchableOpacity
+              onPress={handleUsernameChange}
+              style={styles.pencilButton}
+            >
+              <Icon name="pencil" size={20} color="#00CC66" />
+            </TouchableOpacity>
+          </View>
         </View>
-      </TouchableOpacity>
 
-      <Text style={styles.title}>{displayName || "User"}</Text>
-
-      <Text style={styles.label}>Change Username</Text>
-      <View style={styles.usernameContainer}>
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.inputUsername}
-            placeholder="New Username"
-            placeholderTextColor="#4E4E4E"
-            value={newUsername}
-            onChangeText={setNewUsername}
-          />
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Text style={styles.logoutButtonText}>LOG OUT</Text>
+          </TouchableOpacity>
           <TouchableOpacity
-            onPress={handleUsernameChange}
-            style={styles.pencilButton}
+            style={styles.resetPasswordButton}
+            onPress={handleResetPassword}
           >
-            <Icon name="pencil" size={20} color="#00CC66" />
+            <Text style={styles.resetPasswordButtonText}>RESET PASSWORD</Text>
           </TouchableOpacity>
         </View>
-      </View>
-
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutButtonText}>LOG OUT</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.resetPasswordButton}
-          onPress={handleResetPassword}
-        >
-          <Text style={styles.resetPasswordButtonText}>RESET PASSWORD</Text>
-        </TouchableOpacity>
-      </View>
       </View>
     </ScrollView>
   );
@@ -250,104 +230,11 @@ const styles = StyleSheet.create({
         marginTop: "20%",
         width: "100%",
         height: "80%",
-        justifyContent: "center",
+        justifyContent: "flex-start", // Align children at the top
         alignItems: "center",
-        backgroundColor: "#1C1C1C", // Use a solid background color
+        backgroundColor: "#1C1C1C",
         padding: 20,
         borderRadius: 20,
-        },
-        // New style for shadow container
-    shadowContainer: {
-        width: "100%",
-        height: "100%",
-        justifyContent: "center",
-        alignItems: "center",
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    profileImage: {
-        width: 120,
-        height: 120,
-        borderRadius: 60,
-        marginBottom: 15,
-        borderWidth: 2,
-        borderColor: "#4E92B3",
-    },
-    profilePlaceholder: {
-        width: 120,
-        height: 120,
-        borderRadius: 60,
-        backgroundColor: "#4E92B3",
-        justifyContent: "center",
-        alignItems: "center",
-        marginBottom: 15,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: "bold",
-        color: "#FFFFFF",
-        marginBottom: 20,
-    },
-    label: {
-        color: "#FFFFFF",
-        marginBottom: 5,
-    },
-    usernameContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginTop: 5,
-        width: "100%",
-    },
-    inputContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        borderWidth: 1,
-        borderColor: "#ccc",
-        borderRadius: 5,
-        marginBottom: 10,
-        width: "100%",
-    },
-    inputUsername: {
-        flex: 1,
-        padding: 10,
-        color: "#FFFFFF",
-    },
-    pencilButton: {
-        padding: 10,
-    },
-    buttonContainer: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        width: "100%",
-    },
-    logoutButton: {
-        backgroundColor: "#FF4C4C",
-        padding: 15,
-        borderRadius: 15,
-        width: "48%",
-        alignItems: "center",
-        marginBottom: 10,
-        shadowColor: "#FF0000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.9,
-        shadowRadius: 6,
-        elevation: 10,
-        borderWidth: 1,
-        borderColor: "#FF7373",
-    },
-    resetPasswordButton: {
-        backgroundColor: "#FFB84C",
-        padding: 15,
-        borderRadius: 15,
-        width: "48%",
-        alignItems: "center",
-        marginBottom: 10,
         shadowColor: "#FFA500",
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.9,
@@ -355,34 +242,130 @@ const styles = StyleSheet.create({
         elevation: 10,
         borderWidth: 1,
         borderColor: "#FF7373",
-    },
-    logoutButtonText: {
-        color: "#FFFFFF",
-        fontWeight: "bold",
-        textShadowColor: "#FFB3B3",
-        textShadowOffset: { width: 1, height: 1 },
-        textShadowRadius: 3,
-        fontSize: baseFontSize, // Dynamically calculated font size
-    },
-    resetPasswordButtonText: {
-        color: "#FFFFFF",
-        fontWeight: "bold",
-        textShadowColor: "#FFB3B3",
-        textShadowOffset: { width: 1, height: 1 },
-        textShadowRadius: 3,
-        fontSize: baseFontSize, // Dynamically calculated font size
-    },
-    imageContainer: {
-        position: "relative", // Needed to position the icon absolutely
-    },
-    changeImageIcon: {
-        position: "absolute",
-        bottom: 5,
-        left: 100,
-        backgroundColor: "rgba(0, 0, 0, 0.5)", // Slightly transparent background for better visibility
-        borderRadius: 15,
-        padding: 5,
-    },
+      },
+      verticalStack: {
+        flexDirection: "column",
+        justifyContent: "flex-start", // Align items at the top
+        alignItems: "center",
+        width: "100%",
+        marginTop: "20%", // Space from the top
+      },
+  profileImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    marginBottom: 15,
+    borderWidth: 2,
+    borderColor: "#FF7373",
+    
+  },
+  profilePlaceholder: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: "#4E92B3",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 15,
+    
+},
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#FFFFFF",
+    marginBottom: "40%",
+  },
+  label: {
+    color: "#FFFFFF",
+    marginBottom: 5,
+  },
+  usernameContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 5,
+    width: "100%",
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderBottomWidth: 1,
+    borderColor: "#4E92B3",
+    width: "100%",
+    paddingHorizontal: 5,
+  },
+  inputUsername: {
+    flex: 1,
+    height: 40,
+    color: "#FFFFFF",
+    paddingHorizontal: 10,
+  },
+  pencilButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  buttonContainer: {
+    flexDirection: "row", // Aligns buttons in a row
+    justifyContent: "space-between", // Space between buttons
+    width: "100%",
+    marginTop: 20,
+  },
+  logoutButton: {
+    backgroundColor: "#FF4C4C",
+    padding: 15,
+    borderRadius: 15,
+    width: "48%",
+    alignItems: "center",
+    marginBottom: 10,
+    shadowColor: "#FF0000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.9,
+    shadowRadius: 6,
+    elevation: 10,
+    borderWidth: 1,
+    borderColor: "#FF7373",
+},
+resetPasswordButton: {
+    backgroundColor: "#FFB84C",
+    padding: 15,
+    borderRadius: 15,
+    width: "48%",
+    alignItems: "center",
+    marginBottom: 10,
+    shadowColor: "#FFA500",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.9,
+    shadowRadius: 6,
+    elevation: 10,
+    borderWidth: 1,
+    borderColor: "#FF7373",
+},
+logoutButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "bold",
+    textShadowColor: "#FFB3B3",
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
+    fontSize: baseFontSize, // Dynamically calculated font size
+},
+resetPasswordButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "bold",
+    textShadowColor: "#FFB3B3",
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
+    fontSize: baseFontSize, // Dynamically calculated font size
+},
+changeImageIcon: {
+    position: "absolute",
+    bottom: 5,
+    left: 100,
+    backgroundColor: "rgba(0, 0, 0, 0.5)", // Slightly transparent background for better visibility
+    borderRadius: 15,
+    padding: 5,
+},
+imageContainer: {
+    position: "relative", // Needed to position the icon absolutely
+  },
 });
 
 export default ProfileComponentLogIn;
