@@ -19,9 +19,9 @@ const database = getDatabase(app);
 // The data you want to insert into the database
 const data = {
   "Adds": [
-    {"addposter":"https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v57_297.png?alt=media&token=2f51fd39-1d0c-4932-9e35-0e0f65c2a2c2","addLink":"https://www.google.com"},
-    {"addposter":"https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v58_543.png?alt=media&token=ca094b29-286e-4278-909f-f383b10b6fa1","addLink":"https://www.google.com"},
-    {"addposter":"https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v57_297.png?alt=media&token=2f51fd39-1d0c-4932-9e35-0e0f65c2a2c2","addLink":"https://www.google.com"}
+    {"addposter":"https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_31.png?alt=media&token=979c19c6-6c2d-43c8-8ee0-aa5e7d197393","addLink":"https://www.google.com"},
+    {"addposter":"https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_31.png?alt=media&token=979c19c6-6c2d-43c8-8ee0-aa5e7d197393","addLink":"https://www.google.com"},
+    {"addposter":"https://firebasestorage.googleapis.com/v0/b/colee-cdcdc.appspot.com/o/v64_31.png?alt=media&token=979c19c6-6c2d-43c8-8ee0-aa5e7d197393","addLink":"https://www.google.com"}
   ],
   "CSBc": [
     {
